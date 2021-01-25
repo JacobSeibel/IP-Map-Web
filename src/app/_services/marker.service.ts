@@ -9,13 +9,13 @@ import 'leaflet.heat/dist/leaflet-heat.js'
 export class MarkerService {
   private heat!: any;
   private inUse = false;
-  private waiting = false;
+  private interrupt = false;
 
   constructor(private http: HttpClient) { }
 
   drawIPMarkers(map: L.Map) {
     if(this.inUse){
-      this.waiting = true;
+      this.interrupt = true;
       return;
     } else {
       this.inUse = true;
@@ -27,8 +27,12 @@ export class MarkerService {
         + bounds.getSouthEast().lat + "," + bounds.getSouthEast().lng + "],["
         + bounds.getSouthWest().lat + "," + bounds.getSouthWest().lng + "]]";
       params = params.append('bounds', boundsParam);
+
+      if(this.interruptIfNecessary(map)) return;
+
       // TODO: Make the url here an environment variable
       this.http.get("https://ip-map-api.herokuapp.com/ipCounts", {observe: 'response', responseType: 'json', params}).subscribe((res: any) => {
+        if(this.interruptIfNecessary(map)) return;
         const result = res.body.result;
         // Find the maximum density (represented by log(log(count))) in the set
         const maxDensity = Math.log(Math.log(Math.max.apply(Math, result.map((ipCount: any) => { return ipCount.count; })) + 1) + 1);
@@ -38,6 +42,7 @@ export class MarkerService {
           let normalized = (maxDensity - density) / maxDensity;
           return [ipCount.latitude, ipCount.longitude, normalized] 
         })
+        if(this.interruptIfNecessary(map)) return;
         if(this.heat){
           map.removeLayer(this.heat);
         }
@@ -46,11 +51,19 @@ export class MarkerService {
         // TODO: Figure out why 'as any' is needed
         this.heat = (L as any).heatLayer(markers, {gradient: {0.3: 'blue', 0.35: 'lime', 0.4: 'yellow', 0.5: 'red'}, radius}).addTo(map);
         this.inUse = false;
-        if(this.waiting) {
-          this.waiting = false;
-          this.drawIPMarkers(map);
-        }
+        this.interruptIfNecessary(map);
       });
     }
+  }
+
+  interruptIfNecessary(map: L.Map) {
+    // If this function has already been called again, cancel and restart
+    if(this.interrupt) {
+      this.interrupt = false;
+      this.inUse = false;
+      this.drawIPMarkers(map);
+      return true;
+    }
+    return false;
   }
 }
