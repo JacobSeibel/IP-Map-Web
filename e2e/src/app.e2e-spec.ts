@@ -10,7 +10,7 @@ describe('workspace-project App', () => {
 
   it('should display welcome message', async () => {
     await page.navigateTo();
-    expect(await page.getTitleText()).toEqual('ipv6-map app is running!');
+    expect(await page.getTitleText()).toEqual('ip-map app is running!');
   });
 
   afterEach(async () => {

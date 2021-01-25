@@ -1,5 +1,5 @@
 {
-  "name": "ipv6-map",
+  "name": "ip-map",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",

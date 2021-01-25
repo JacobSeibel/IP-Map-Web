@@ -25,7 +25,7 @@ module.exports = function (config) {
       suppressAll: true // removes the duplicated traces
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/ipv6-map'),
+      dir: require('path').join(__dirname, './coverage/ip-map'),
       subdir: '.',
       reporters: [
         { type: 'html' },
