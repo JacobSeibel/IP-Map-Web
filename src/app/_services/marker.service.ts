@@ -27,6 +27,7 @@ export class MarkerService {
         + bounds.getSouthEast().lat + "," + bounds.getSouthEast().lng + "],["
         + bounds.getSouthWest().lat + "," + bounds.getSouthWest().lng + "]]";
       params = params.append('bounds', boundsParam);
+      // TODO: Make the url here an environment variable
       this.http.get("https://ip-map-api.herokuapp.com/ipCounts", {observe: 'response', responseType: 'json', params}).subscribe((res: any) => {
         const result = res.body.result;
         // Find the maximum density (represented by log(log(count))) in the set
